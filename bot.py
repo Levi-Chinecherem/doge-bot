@@ -189,7 +189,6 @@ class DogeBot:
                 query.message.chat_id
             )
 
-    # Also update the show_main_welcome method to handle message deletion
     async def show_main_welcome(self, update: Update, context: CallbackContext) -> None:
         """Show the main welcome message after social tasks are completed"""
         try:
@@ -222,6 +221,7 @@ class DogeBot:
                 [InlineKeyboardButton("📜 Tasks", callback_data='tasks')],
                 [InlineKeyboardButton("🏆 Leaderboard", callback_data='leaderboard')],
                 [InlineKeyboardButton("👤 Referral Info", callback_data='referral')],
+                [InlineKeyboardButton("👥 My Referrals", callback_data='my_referrals')],
                 [InlineKeyboardButton("🔗 Get Referral Link", callback_data='referral_link')]
             ]
             reply_markup = InlineKeyboardMarkup(keyboard)
@@ -380,6 +380,44 @@ class DogeBot:
                 update.callback_query.message.chat_id
             )
 
+    async def show_referred_users(self, update: Update, context: CallbackContext) -> None:
+        """Show all users referred by the current user"""
+        try:
+            user_id = update.callback_query.from_user.id
+            logger.info(f"Fetching referred users for user_id: {user_id}")
+            
+            with DatabaseConnection() as conn:
+                c = conn.cursor()
+                # Fetch all users referred by the current user
+                c.execute('SELECT username, doge_points FROM users WHERE referred_by = ?', (user_id,))
+                referred_users = c.fetchall()
+                logger.info(f"Referred users: {referred_users}")
+            
+            if not referred_users:
+                await self.send_message_with_retry(
+                    "You haven't referred anyone yet.",
+                    update.callback_query.message.chat_id
+                )
+                return
+            
+            # Build the message
+            message = "👥 *Users You Have Referred:*\n\n"
+            for i, (username, doge_points) in enumerate(referred_users, start=1):
+                message += f"{i}. @{username}: {doge_points} Doge Points\n"
+            
+            await self.send_message_with_retry(
+                message,
+                update.callback_query.message.chat_id,
+                parse_mode='Markdown'
+            )
+            
+        except Exception as e:
+            logger.error(f"Error in show_referred_users: {str(e)}")
+            await self.send_message_with_retry(
+                "Sorry, there was an error fetching your referred users. Please try again later.",
+                update.callback_query.message.chat_id
+            )
+
     async def get_referral_link(self, update: Update, context: CallbackContext) -> None:
         """Handle the referral link button"""
         try:
@@ -413,6 +451,8 @@ class DogeBot:
                 await self.show_leaderboard(update, context)
             elif query.data == 'referral':
                 await self.show_referral_info(update, context)
+            elif query.data == 'my_referrals':
+                await self.show_referred_users(update, context)
             elif query.data == 'referral_link':
                 await self.get_referral_link(update, context)
                 
@@ -493,7 +533,6 @@ class DogeBot:
                 "Sorry, there was an error adding the task. Please try again.",
                 update.message.chat_id
             )
-
 
     async def error_handler(self, update: Update, context: CallbackContext) -> None:
         """Handle errors in the dispatcher"""

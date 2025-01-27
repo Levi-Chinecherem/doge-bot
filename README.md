@@ -7,8 +7,6 @@ Welcome to the **Doge Points Telegram Bot**! This bot allows users to earn **Dog
 
 ## **Features**
 
-TOKEN = '7480193735:AAHm8FihmOVjJ1oyUa7521Xgfbtg-7SGKoQ'
-
 - **Earn Doge Points**: Complete tasks and refer friends to earn points.
 - **Task System**: Users can see and complete tasks to earn rewards.
 - **Referral System**: Earn bonus points when your referrals complete tasks.
