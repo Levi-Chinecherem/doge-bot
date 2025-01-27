@@ -39,7 +39,7 @@ doge_bot/
 ### **2. Clone the Repository**
 
 ```bash
-git clone https://github.com/your-username/doge-bot.git
+git clone https://github.com/Levi-Chinecherem/doge-bot.git
 cd doge-bot
 ```
 
